@@ -9,21 +9,17 @@
     import { onMount } from "svelte";
     import TicTacToeItem from "./TicTacToeItem.svelte";
     import { createEventDispatcher } from "svelte";
+    import type { XO, _XO, SLAT } from "$lib/shared";
+    import { whoIsWinner } from "$lib/shared";
 
     /* PROPS */
     export let id: SlatID;
 
-    /* TYPES */
-    type SLAT = Array<Array<XO>>;
-    type XO = "X" | "O" | null;
-    type _XO = "X" | "O";
-
     /* MAIN LOGIC */
-    function executeMiniMaxAlgorithm(slat: SLAT, initFirst: boolean = true) { console.log("her",1 )
+    function executeMiniMaxAlgorithm(slat: SLAT, initFirst: boolean = true) {
         // get shifts
         const freeShifts = getAllFreeShifts(slat);
         const ranks: number[] = [];
-        console.log("her",2 )
 
         // check each shift is good and rank it
         freeShifts.forEach((x) => {
@@ -55,7 +51,6 @@
         } else {
             marks = Math.min(...ranks);
         }
-        console.log("her",4 )
         // Returning action if called for the first time
         if (initFirst) return freeShifts[ranks.indexOf(marks)];
         else return marks;
@@ -102,32 +97,6 @@
         return countTerms(allXOs, "X") == countTerms(allXOs, "O") ? "X" : "O";
     };
 
-    const whoIsWinner = (slat: SLAT): XO => {
-        // possible win shifts
-        const allWShifts = [
-            [slat[0][0], slat[0][1], slat[0][2]],
-            [slat[1][0], slat[1][1], slat[1][2]],
-            [slat[2][0], slat[2][1], slat[2][2]],
-            [slat[0][0], slat[1][0], slat[2][0]],
-            [slat[0][1], slat[1][1], slat[2][1]],
-            [slat[0][2], slat[1][2], slat[2][2]],
-            [slat[0][0], slat[1][1], slat[2][2]],
-            [slat[0][2], slat[1][1], slat[2][0]],
-        ];
-        let status = null;
-
-        // check if some won
-        allWShifts.forEach((shift) => {
-            const [a, b, c] = shift;
-            if (a && a === b && a === c) {
-                status = a;
-                return a;
-            }
-        });
-        // else null
-        return status;
-    };
-
     const checkIfGameIsOver = (slat: SLAT): boolean => {
         // get all shifts in single array
         const allXOs = slat.reduce((x, y) => x.concat(y));
@@ -167,13 +136,13 @@
 
         initAIStep() {
             if (!checkIfGameIsOver(this.slat)) {
-                if (this.ai == whosNextTurn(this.slat)) { 
+                if (this.ai == whosNextTurn(this.slat)) {
                     this.commandAItoMove();
                 }
             }
         }
 
-        commandAItoMove() { console.log("her",4 )
+        commandAItoMove() {
             this.addShiftToBoard(
                 executeMiniMaxAlgorithm(this.slat) as Array<number>,
             );
@@ -188,7 +157,6 @@
                         createSlatAfterShiftExecution(this.slat, shift),
                         shift,
                     );
-                    // this.slat = createSlatAfterShiftExecution(this.slat, shift);
                 }
             }
         }
@@ -217,6 +185,7 @@
     /* Vars */
     let disabled = true;
     let wWinShift: XO;
+    let mounted: boolean = false;
     const dispatch = createEventDispatcher();
     $: {
         if ($activeSlats.includes(id) || $activeSlats.includes(0)) {
@@ -242,7 +211,7 @@
     }
     function revampSlatWithSvelte(newSlat: SLAT, shift: number[]) {
         const ID = getItemIDbyShift(shift);
-        $: slat.slat = newSlat;
+        $: slat.slat = newSlat; // eslint-disable-line svelte(non-top-level-reactive-declaration)
         // slat.initAIStep()
         dispatch("changeSlatChild", ID as number);
         if (whoIsWinner(slat.slat) !== null) updateWinnerWithSvelte();
@@ -259,7 +228,10 @@
         return id;
     }
 
-    onMount(() => console.log("READY"));
+    // on mount
+    onMount(() => {
+        mounted = true;
+    });
 </script>
 
 <section class={`brightness-90 aspect-square rounded-2xl p-1`}>
@@ -270,7 +242,14 @@
             <h2 class="font-extrabold text-6xl uppercase">{wWinShift}</h2>
         </div>
     {/if}
-    {#if !wWinShift}
+    {#if !mounted}
+        <div
+            class="bg-zinc-950 rounded-2xl w-full h-full grid place-items-center"
+        >
+            <h2 class="font-extrabold text-6xl uppercase">🔃</h2>
+        </div>
+    {/if}
+    {#if !wWinShift && mounted}
         <div class="grid gap-2 grid-cols-3 divide-solid divide-zinc-500">
             {#each slat.slat as x, a}
                 {#each x as y, b}

@@ -24,8 +24,11 @@
     function submitWinner(e: CustomEvent<WSlat>) {
         winnerSlats.update((x) => {
             let wSlats = $winnerSlats.filter((x) => x.id == e.detail.id);
-            if (wSlats.length == 0) return [...x, e.detail];
-            else return x;
+            if (wSlats.length == 0) {
+                let y = x;
+                x[e.detail.id] = e.detail;
+                return y;
+            } else return x;
         });
         activeSlats.update((x) => {
             const y = x;
@@ -39,7 +42,9 @@
     }
 </script>
 
-<div class="aspect-square grid gap-4 w-fit h-fit max-h-full max-w-full grid-cols-3">
+<div
+    class="aspect-square grid gap-4 w-fit h-fit max-h-full max-w-full grid-cols-3"
+>
     {#each allSlats as stat}
         <TicTacToeBlock
             on:submitWinner={submitWinner}
