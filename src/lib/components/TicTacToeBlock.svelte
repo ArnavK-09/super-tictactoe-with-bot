@@ -3,7 +3,6 @@
     import {
         activeSlats,
         type SlatID,
-        currentPlayerShift,
         winnerSlats,
     } from "$lib/store";
     import { onMount } from "svelte";
@@ -22,27 +21,29 @@
         const ranks: number[] = [];
 
         // check each shift is good and rank it
-        freeShifts.forEach((x) => {
+        for (let x of freeShifts) {
             // new board parralel if this move done
             const boardIfThisMoveDone = createSlatAfterShiftExecution(slat, x);
 
             // if this move can make game win
-            if (checkIfGameIsOver(boardIfThisMoveDone))
+            if (checkIfGameIsOver(boardIfThisMoveDone)) {
                 ranks.push(
                     encodeXOintoDigits(whoIsWinner(boardIfThisMoveDone)),
                 );
-
+            }
+               
             // recurursive rank
-            const X = executeMiniMaxAlgorithm(slat, false);
+            const X = executeMiniMaxAlgorithm(boardIfThisMoveDone, false);
             ranks.push(X as number);
-
+            
             // break if winner found
             if (
                 (whosNextTurn(slat) == "X" && X == 1) ||
                 (whosNextTurn(slat) == "O" && X == -1)
-            )
-                return;
-        });
+            ) {
+                break;
+            }
+        }
 
         // get marks for minimax
         var marks = 0;
@@ -82,7 +83,7 @@
 
         return freeShifts;
     };
-    const countTerms = (array: Array<unknown>, whatToBeFind: any): number => {
+    const countTerms = (array: Array<unknown>, whatToBeFind: string): number => {
         let n = 0;
         array.forEach((x) => {
             if (x == whatToBeFind) n++;
@@ -120,13 +121,6 @@
 
         // init
         constructor() {
-            if ($currentPlayerShift == "X") {
-                this.ai = "O";
-            }
-            if ($currentPlayerShift == "O") {
-                this.ai = "X";
-            }
-
             this.slat = [
                 [null, null, null],
                 [null, null, null],
@@ -211,8 +205,8 @@
     }
     function revampSlatWithSvelte(newSlat: SLAT, shift: number[]) {
         const ID = getItemIDbyShift(shift);
-        $: slat.slat = newSlat; // eslint-disable-line svelte(non-top-level-reactive-declaration)
-        // slat.initAIStep()
+        $: slat.slat = newSlat; 
+        slat.initAIStep();
         dispatch("changeSlatChild", ID as number);
         if (whoIsWinner(slat.slat) !== null) updateWinnerWithSvelte();
     }

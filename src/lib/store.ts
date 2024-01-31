@@ -14,9 +14,9 @@ export type WSlat = {
 };
 
 /**
- * Move of current player
+ * Move of current player | X DEFAULT
  */
-export const currentPlayerShift = writable<"X" | "O" | null>(null);
+export const currentPlayerShift = writable<"X">("X");
 
 /**
  * Current Active Slats

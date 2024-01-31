@@ -23,7 +23,7 @@
             ];
 
             // get moves
-            $winnerSlats.forEach((x, i) => {
+            $winnerSlats.forEach((x) => {
                 if(x.id < 4) {
                     slat[0][x.id-1] = x.shift
                 }else if(x.id < 7 && x.id > 3) {
@@ -33,9 +33,12 @@
                     slat[2][x.id-7] = x.shift
                 }
             });
+
             // win
             const w = whoIsWinner(slat)
-            if(w) goto(`/winner?w=${w}`);
+            if(w) {
+                setTimeout(() =>  goto(`/winner?w=${w}`), 5000)
+            }
         }
     }
 </script>

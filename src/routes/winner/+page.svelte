@@ -12,11 +12,10 @@
         const w = url.searchParams.get("w");
 
         if (w == "X") {
-            winner = "X";
+            winner = "You";
         } else if (w == "O") {
-            winner = "O";
+            winner = "Bot";
         } else {
-            window.alert("POG");
             goto("/");
         }
     });
@@ -27,7 +26,7 @@
 >
     <div class="text-center">
         <h1 class="text-7xl break-words">Winner Is:</h1>
-        <h2 class="text-9xl w-full bg-white/5 rounded-full ext-center py-1">
+        <h2 class="break-all text-9xl w-full bg-white/5 rounded-full ext-center py-1">
             {winner}
         </h2>
         <a
